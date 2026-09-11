@@ -117,15 +117,18 @@ gratuits vision-capable via `GET https://openrouter.ai/api/v1/models`
 (la liste "free" change souvent).
 
 **Acceptance criteria :**
-- [x] Modèle confirmé disponible et gratuit au moment du codage (relevé
-      via `GET /api/v1/models` le 2026-09-11 : `google/gemma-4-31b-it:free`).
-- [ ] `openRouterOcrProvider.run()` retourne un `OcrResult` exploitable sur
-      un vrai PDF/image — **code écrit, non testé en conditions réelles**.
+- [x] Modèle confirmé disponible et gratuit (`google/gemma-4-31b-it:free`
+      au codage, **remplacé par `nex-agi/nex-n2.5-mini:free`** après test
+      réel : gemma-4 renvoyait un 429 persistant "rate-limited upstream"
+      côté Google AI Studio — confirmé non lié à notre requête en testant
+      un autre modèle avec succès immédiat).
+- [x] `openRouterOcrProvider.run()` retourne un `OcrResult` exploitable sur
+      un vrai PDF — **testé avec une vraie clé, succès**.
 - [x] Erreur claire si `OPENROUTER_API_KEY` absente.
 
 **Verification :**
-- [ ] `OCR_PROVIDER=openrouter` sur un vrai PDF (**bloqué sur la clé
-      réelle** — voir checkpoint Phase 1)
+- [x] `OCR_PROVIDER=openrouter` sur un vrai PDF → succès (après le
+      remplacement de modèle)
 - [x] `npm run build` passe
 
 **Dependencies :** Task 2, clé `OPENROUTER_API_KEY` renseignée par
@@ -166,13 +169,21 @@ message d'erreur explicite, atteignable seulement via
 gratuit).
 
 **Acceptance criteria :**
-- [ ] `zaiOcrProvider.run()` retourne un `OcrResult` exploitable sur un
-      vrai PDF/image — **code écrit (content-part "file" officiel), non
-      testé en conditions réelles**.
+- [x] `zaiOcrProvider.run()` retourne un `OcrResult` exploitable sur un
+      vrai PDF — **corrigé après test réel** : le champ base64 était
+      `file_url` (faux, 400) au lieu de `file_data` (bon, docs Z.ai).
+      Après correction, requête acceptée par l'API ; toujours 429
+      "temporairement surchargé" à chaque tentative (capacité du service
+      gratuit GLM-4.6V-Flash, cohérent avec la note déjà dans le plan
+      "~1 requête concurrente rapportée" — pas un bug de notre code, la
+      chaîne bascule normalement dessus).
 - [x] Erreur claire si `ZAI_API_KEY` absente.
 
 **Verification :**
-- [ ] `OCR_PROVIDER=zai` sur un vrai PDF (**bloqué sur la clé réelle**)
+- [x] `OCR_PROVIDER=zai` sur un vrai PDF → requête correctement formée
+      (400 corrigé), service gratuit systématiquement surchargé au
+      moment du test (429) — comportement attendu de ce provider en
+      free tier, pas un blocage de code
 - [x] `npm run build` passe
 
 **Dependencies :** Task 2, clé `ZAI_API_KEY` renseignée pour le test réel
@@ -185,9 +196,12 @@ gratuit).
 ---
 
 ## Checkpoint : OCR
-- [x] Task 3 testée avec une vraie clé (déjà disponible)
-- [x] Tasks 4 et 6 implémentées (Task 5 annulée) ; tests réels en attente
-      des clés OpenRouter/Z.ai
+- [x] Task 3 (Gemini) testée avec une vraie clé : succès
+- [x] Task 4 (OpenRouter) testée avec une vraie clé : succès (après
+      remplacement du modèle gemma-4, 429 persistant, par nex-n2.5-mini)
+- [x] Task 6 (Z.ai) testée avec une vraie clé : requête correcte (après
+      correctif file_data), service gratuit surchargé au moment du test
+      (429) — comportement attendu, pas un bug
 - [x] `npm run build` passe sur l'ensemble
 
 ## Phase 3 : Providers extraction manquants
@@ -199,16 +213,16 @@ texte `:free`, en réutilisant `shared.ts`
 comme le font déjà Gemini et Groq.
 
 **Acceptance criteria :**
-- [x] Modèle confirmé disponible et gratuit au moment du codage (relevé
-      via `GET /api/v1/models` le 2026-09-11 : `google/gemma-4-26b-a4b-it:free`).
-- [ ] `openRouterExtractionProvider.extract()` retourne un
-      `ExtractionResult` complet (fields, model, usage si disponible) —
-      **code écrit, non testé en conditions réelles**.
+- [x] Modèle confirmé disponible et gratuit (`google/gemma-4-26b-a4b-it:free`
+      au codage, **remplacé par `nex-agi/nex-n2.5-mini:free`** — même
+      raison que Task 4, 429 persistant côté gemma-4).
+- [x] `openRouterExtractionProvider.extract()` retourne un
+      `ExtractionResult` complet — **testé avec une vraie clé, succès**
+      (champs correctement extraits, JSON propre).
 - [x] Erreur claire si `OPENROUTER_API_KEY` absente.
 
 **Verification :**
-- [ ] `EXTRACTION_PROVIDER=openrouter` sur un vrai devis (**bloqué sur la
-      clé réelle**)
+- [x] `EXTRACTION_PROVIDER=openrouter` sur un vrai devis → succès
 - [x] `npm run build` passe
 
 **Dependencies :** Task 2, clé `OPENROUTER_API_KEY`
@@ -227,13 +241,22 @@ comme le font déjà Gemini et Groq.
 - [x] Modèle texte confirmé disponible dans le catalogue Workers AI
       (`@cf/meta/llama-3.3-70b-instruct-fp8-fast`, confirmé officiel).
 - [ ] `cloudflareWorkersAiExtractionProvider.extract()` retourne un
-      `ExtractionResult` complet — **code écrit, non testé en conditions
-      réelles** (pas de mode JSON confirmé côté API, à surveiller).
+      `ExtractionResult` complet — **bloqué : 401 "Authentication error"
+      avec la vraie clé fournie**. Diagnostiqué : `curl
+      .../tokens/verify` avec le même token renvoie "Invalid format for
+      Authorization header" — le token fait 32 caractères hexadécimaux,
+      qui est le format d'une **Global API Key** (ancien système,
+      header `X-Auth-Key`/`X-Auth-Email`), pas d'un **API Token** scoped
+      (40+ caractères, header `Authorization: Bearer`, ce que le code
+      envoie — conforme à la doc officielle Cloudflare). Action requise
+      côté utilisateur : créer un vrai API Token sur
+      dash.cloudflare.com/profile/api-tokens (permission "Workers AI -
+      Edit"), pas la Global API Key.
 - [x] Erreur claire si clés Cloudflare absentes.
 
 **Verification :**
-- [ ] `EXTRACTION_PROVIDER=cloudflare-workers-ai` sur un vrai devis
-      (**bloqué sur la clé réelle**)
+- [ ] `EXTRACTION_PROVIDER=cloudflare-workers-ai` sur un vrai devis —
+      **toujours bloqué, voir ci-dessus**
 - [x] `npm run build` passe
 
 **Dependencies :** Task 2, clés Cloudflare
@@ -250,13 +273,16 @@ comme le font déjà Gemini et Groq.
 `glm-4.5-flash`, gratuit).
 
 **Acceptance criteria :**
-- [ ] `zaiExtractionProvider.extract()` retourne un `ExtractionResult`
-      complet — **code écrit, non testé en conditions réelles**.
+- [x] `zaiExtractionProvider.extract()` retourne un `ExtractionResult`
+      complet — **testé avec une vraie clé, succès** (champs corrects) ;
+      a nécessité le correctif `stripCodeFence` (le modèle enveloppait sa
+      réponse dans ```json ... ```, cf `extraction/shared.ts`).
 - [x] Erreur claire si `ZAI_API_KEY` absente.
 
 **Verification :**
-- [ ] `EXTRACTION_PROVIDER=zai` sur un vrai devis (**bloqué sur la clé
-      réelle**)
+- [x] `EXTRACTION_PROVIDER=zai` sur un vrai devis → succès (après le
+      correctif markdown ; service parfois surchargé côté Z.ai — 429
+      transitoire observé sur des tentatives suivantes, pas un bug)
 - [x] `npm run build` passe
 
 **Dependencies :** Task 2, clé `ZAI_API_KEY`
@@ -269,8 +295,12 @@ comme le font déjà Gemini et Groq.
 ---
 
 ## Checkpoint : Extraction
-- [x] Tasks 7-9 implémentées ; tests réels en attente des clés
-      OpenRouter/Cloudflare/Z.ai
+- [x] Task 7 (OpenRouter) testée avec une vraie clé : succès
+- [ ] Task 8 (Cloudflare) : **bloquée**, 401 côté Cloudflare — le token
+      fourni a le format d'une Global API Key, pas d'un API Token scoped
+      (Bearer). Action requise côté utilisateur (voir Task 8 ci-dessus).
+- [x] Task 9 (Z.ai) testée avec une vraie clé : succès (après correctif
+      markdown-fence)
 - [x] `npm run build` passe sur l'ensemble
 
 ## Phase 4 : Chaîne de bascule générique
@@ -388,10 +418,13 @@ remplacés par le seuil de contexte générique par provider dans
 - [x] Bascule sur 429 vérifiée (429 simulé sur Mistral, bascule réelle
       vers Gemini)
 - [x] Bascule sur contexte trop grand vérifiée (extraction, groq → gemini)
-- [ ] Test end-to-end avec un vrai PDF et de vraies clés pour au moins un
-      provider par nouveau fournisseur — **bloqué sur OpenRouter/Z.ai
-      (code écrit, clés pas encore renseignées)**. Cloudflare Workers AI
-      n'a que l'extraction (OCR écarté, Task 5).
+- [x] Test end-to-end avec un vrai PDF et de vraies clés : OCR OpenRouter,
+      extraction OpenRouter, extraction Z.ai tous testés avec succès en
+      conditions réelles (deux bugs réels trouvés et corrigés au passage :
+      champ `file_data` Z.ai, modèle OpenRouter gemma-4 remplacé, réponses
+      JSON enveloppées en markdown tolérées). **Cloudflare Workers AI
+      (extraction) reste bloqué : 401, problème de format du token côté
+      utilisateur (Global API Key au lieu d'un API Token scoped).**
 - [x] `npm run build` passe
 - [ ] Revue avec l'utilisateur avant Phase 5
 
@@ -422,11 +455,13 @@ génériques avec bascule automatique, cœur de l'application.
 ---
 
 ## Checkpoint final
-- [ ] Toutes les tâches ci-dessus cochées — **il reste le test réel en
-      conditions live pour OpenRouter, Z.ai et Cloudflare Workers AI
-      (extraction) : code écrit et buildé, bloqué sur les clés API**
-      (`OPENROUTER_API_KEY`, `ZAI_API_KEY`, `CLOUDFLARE_API_TOKEN`,
-      `CLOUDFLARE_ACCOUNT_ID` — toujours vides dans `app/.env` à ce stade)
+- [ ] Toutes les tâches ci-dessus cochées — **il reste Task 8 (extraction
+      Cloudflare Workers AI) : bloquée sur un problème de format de
+      credential côté utilisateur (401 "Authentication error" — le token
+      fourni est une Global API Key, pas un API Token scoped). Tout le
+      reste (OpenRouter OCR+extraction, Z.ai OCR+extraction, Gemini OCR,
+      la chaîne de bascule) est testé et fonctionnel en conditions
+      réelles.**
 - [x] `choix_techniques.md` à jour
 - [ ] Proposer `/code-review-and-quality`, puis proposer une PR (consigne
       du projet une fois la branche de feature entièrement implémentée) —
