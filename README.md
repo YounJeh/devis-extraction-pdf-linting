@@ -17,38 +17,35 @@
 
 Devis Extraction PDF Linting est une petite application web qui prend un devis
 au format PDF (natif ou scanné), l'envoie à un pipeline OCR + LLM, et affiche
-chaque champ extrait **avec sa preuve** — le passage exact du document dont
+chaque champ extrait **avec sa preuve**, correspondant au passage exact du document dont
 la valeur est issue, cliquable pour être retrouvé à la page et à la position
 d'origine. Rien n'est jamais deviné silencieusement : un champ absent du
 document reste vide plutôt que d'être déduit.
 
 Les champs à extraire, leurs libellés et leurs règles d'extraction sont
 pilotés par un simple fichier de configuration JSON (`config/fields.config.json`)
-— adapter l'outil à un autre type de document ne demande aucune modification
+afin d'adapter l'outil à un autre type de document ne demande aucune modification
 de code.
 
-> <!-- TODO: remplacer par une vraie capture d'écran de l'application -->
 > ![Vue d'ensemble de l'application](docs/screenshots/overview.png)
 
-### Extraction avec preuve à la source
+### Extraction avec preuve à la source surlignée
 
-> <!-- TODO: remplacer par une vraie capture d'écran de l'application -->
 > ![Champ extrait avec sa preuve dans le document](docs/screenshots/evidence.png)
 
 ### Éditeur de champs
 
-> <!-- TODO: remplacer par une vraie capture d'écran de l'application -->
 > ![Éditeur de champs d'extraction](docs/screenshots/field-editor.png)
 
 ## Fonctionnalités
 
-- **Dépose de PDF** — natif ou scanné, jusqu'à 30 pages et 4 Mo, glisser-déposer ou sélection de fichier.
-- **OCR + extraction par LLM** — texte extrait puis champs identifiés par un modèle de langage, avec repli automatique sur un fournisseur à quota plus large pour les documents volumineux.
-- **Preuve à la source** — chaque valeur extraite pointe vers le passage exact du document (page + position) qui l'a produite.
-- **Config des champs par JSON** — ajoutez, modifiez ou supprimez des champs à extraire sans toucher au code ; testez un override ponctuel sans redéployer.
-- **Providers pluggables** — OCR (Mistral, Gemini, Cloudflare Workers AI, OpenRouter, Z.AI) et extraction (Groq, Gemini, Cloudflare Workers AI, OpenRouter, Z.AI), chacun remplaçable indépendamment.
-- **Tracing optionnel** — intégration Langfuse (OpenTelemetry) pour observer les appels modèles en production ; désactivée par défaut, aucune configuration requise pour démarrer.
-- **Export** — export JSON des champs extraits et impression d'un PDF annoté.
+- **Dépose de PDF** : natif ou scanné, jusqu'à 30 pages et 4 Mo, glisser-déposer ou sélection de fichier.
+- **OCR + extraction par LLM** : texte extrait puis champs identifiés par un modèle de langage, avec repli automatique sur un fournisseur à quota plus large pour les documents volumineux.
+- **Preuve à la source** : chaque valeur extraite pointe vers le passage exact du document (page + position) qui l'a produite.
+- **Config des champs par JSON** : ajoutez, modifiez ou supprimez des champs à extraire sans toucher au code ; testez un override ponctuel sans redéployer.
+- **Providers pluggables** : OCR (Mistral, Gemini, Cloudflare Workers AI, OpenRouter, Z.AI) et extraction (Groq, Gemini, Cloudflare Workers AI, OpenRouter, Z.AI), chacun remplaçable indépendamment.
+- **Tracing optionnel** : intégration Langfuse (OpenTelemetry) pour observer les appels modèles en production ; désactivée par défaut, aucune configuration requise pour démarrer.
+- **Export** : export JSON des champs extraits et impression d'un PDF annoté.
 
 ## Architecture
 
