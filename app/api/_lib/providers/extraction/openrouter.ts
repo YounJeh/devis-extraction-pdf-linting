@@ -1,5 +1,5 @@
 import type { ExtractionProvider } from "./types.js";
-import { buildExtractionSystemPrompt, buildExtractionUserPrompt, parseExtractionFields } from "./shared.js";
+import { buildExtractionSystemPrompt, buildExtractionUserPrompt, parseExtractionFields, mapOpenAiUsage } from "./shared.js";
 import { PROVIDERS_CONFIG } from "../../config.js";
 import { ProviderHttpError } from "../http-error.js";
 
@@ -44,13 +44,7 @@ export const openRouterExtractionProvider: ExtractionProvider = {
     return {
       fields: parseExtractionFields(content, config.fields, "OpenRouter"),
       model: MODEL,
-      usage: data.usage
-        ? {
-            input: data.usage.prompt_tokens,
-            output: data.usage.completion_tokens,
-            total: data.usage.total_tokens,
-          }
-        : undefined,
+      usage: mapOpenAiUsage(data.usage),
     };
   },
 };

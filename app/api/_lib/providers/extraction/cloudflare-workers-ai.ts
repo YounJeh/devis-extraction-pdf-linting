@@ -1,5 +1,5 @@
 import type { ExtractionProvider } from "./types.js";
-import { buildExtractionSystemPrompt, buildExtractionUserPrompt, parseExtractionFields } from "./shared.js";
+import { buildExtractionSystemPrompt, buildExtractionUserPrompt, parseExtractionFields, mapOpenAiUsage } from "./shared.js";
 import { PROVIDERS_CONFIG } from "../../config.js";
 import { ProviderHttpError } from "../http-error.js";
 
@@ -53,13 +53,7 @@ export const cloudflareWorkersAiExtractionProvider: ExtractionProvider = {
     return {
       fields: parseExtractionFields(content, config.fields, "Cloudflare Workers AI"),
       model: MODEL,
-      usage: data.result?.usage
-        ? {
-            input: data.result.usage.prompt_tokens,
-            output: data.result.usage.completion_tokens,
-            total: data.result.usage.total_tokens,
-          }
-        : undefined,
+      usage: mapOpenAiUsage(data.result?.usage),
     };
   },
 };

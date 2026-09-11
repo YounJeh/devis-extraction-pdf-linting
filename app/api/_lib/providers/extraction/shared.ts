@@ -1,6 +1,7 @@
 import type { ExtractedFieldResult } from "./types.js";
 import type { ExtractionConfig, FieldSpec } from "../../../../config/schema.js";
 import type { OcrResult } from "../ocr/types.js";
+import type { GenerationUsage } from "../../tracing/types.js";
 
 const PROTOCOL_RULES =
   'Réponds uniquement en JSON avec un objet {"fields": [{"id": string, ' +
@@ -86,4 +87,11 @@ export function parseExtractionFields(
       page: typeof raw?.page === "number" ? raw.page : null,
     };
   });
+}
+
+/** Format d'usage partagé par les providers chat-completions OpenAI-compatible (Groq, OpenRouter, Z.ai, Cloudflare Workers AI). */
+export function mapOpenAiUsage(usage: unknown): GenerationUsage | undefined {
+  if (!usage || typeof usage !== "object") return undefined;
+  const raw = usage as { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
+  return { input: raw.prompt_tokens, output: raw.completion_tokens, total: raw.total_tokens };
 }
