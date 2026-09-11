@@ -1,0 +1,35 @@
+{
+  "documentContext": "Tu extrais des champs d'un devis (BTP, travaux, prestations) à partir d'un texte OCR, potentiellement bruité et réparti sur plusieurs pages.",
+  "fields": [
+    {
+      "id": "quote_number",
+      "label": "Numéro de devis",
+      "instructions": "Recopie le numéro tel qu'imprimé, caractère pour caractère (zéros non significatifs, tirets, slashes, espaces inclus) — jamais reformaté."
+    },
+    {
+      "id": "company_name",
+      "label": "Nom de la société",
+      "instructions": "Société émettrice du devis, jamais le client. Le nom commercial/de marque, sans forme juridique (SARL, SAS, SASU, EURL...) ni mot générique (\"Société\", \"Entreprise\") si un nom plus court et reconnaissable apparaît ailleurs dans le texte."
+    },
+    {
+      "id": "deposit",
+      "label": "Acompte",
+      "instructions": "Un nombre seul, sans le symbole \"%\". Un devis exprime parfois la même somme en pourcentage et en montant équivalent (ex: \"30 %\" / \"3 295,80 €\") ; choisis toujours le pourcentage. \"deposit\" et \"balance\" sont indépendants : ne déduis jamais l'un de l'autre (ex: solde = 100 − acompte) si ce n'est pas écrit explicitement — l'un des deux peut être null même quand l'autre est renseigné."
+    },
+    {
+      "id": "balance",
+      "label": "Solde",
+      "instructions": "Un nombre seul, sans le symbole \"%\". Un devis exprime parfois la même somme en pourcentage et en montant équivalent (ex: \"30 %\" / \"3 295,80 €\") ; choisis toujours le pourcentage. \"deposit\" et \"balance\" sont indépendants : ne déduis jamais l'un de l'autre (ex: solde = 100 − acompte) si ce n'est pas écrit explicitement — l'un des deux peut être null même quand l'autre est renseigné."
+    },
+    {
+      "id": "balance_due",
+      "label": "Délai de paiement du solde",
+      "instructions": "La durée telle qu'écrite, chiffres ou toutes lettres (ex: \"30 jours\", \"trente (30) jours\"), pas seulement le nombre isolé."
+    },
+    {
+      "id": "offer_validity",
+      "label": "Validité de l'offre",
+      "instructions": "Soit une durée relative (\"1 mois\", \"15 jours\"), soit une date d'expiration absolue (\"15/04/2025\"), selon ce qui est écrit — recopie telle quelle, ne convertis jamais l'une dans l'autre."
+    }
+  ]
+}
