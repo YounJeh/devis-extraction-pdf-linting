@@ -24,7 +24,10 @@ export const zaiOcrProvider: OcrProvider = {
           {
             role: "user",
             content: [
-              { type: "file", file: { file_url: `data:application/pdf;base64,${base64}` } },
+              {
+                type: "file",
+                file: { file_data: `data:application/pdf;base64,${base64}`, filename: "document.pdf" },
+              },
               { type: "text", text: OCR_PAGE_MARKER_INSTRUCTION },
             ],
           },
