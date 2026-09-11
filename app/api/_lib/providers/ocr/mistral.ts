@@ -1,4 +1,5 @@
 import type { OcrProvider, OcrResult } from "./types.js";
+import { ProviderHttpError } from "../http-error.js";
 
 interface MistralOcrBlock {
   top_left_x: number;
@@ -44,7 +45,7 @@ export const mistralOcrProvider: OcrProvider = {
 
     if (!response.ok) {
       const body = await response.text();
-      throw new Error(`Mistral OCR a échoué (${response.status}): ${body.slice(0, 300)}`);
+      throw new ProviderHttpError(response.status, `Mistral OCR a échoué (${response.status}): ${body.slice(0, 300)}`);
     }
 
     const data = (await response.json()) as MistralOcrResponse;

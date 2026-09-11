@@ -1,6 +1,7 @@
 import type { OcrProvider } from "./types.js";
 import { OCR_PAGE_MARKER_INSTRUCTION, parsePageMarkedText } from "./shared.js";
 import { PROVIDERS_CONFIG } from "../../config.js";
+import { ProviderHttpError } from "../http-error.js";
 
 const MODEL = PROVIDERS_CONFIG.providers.gemini.ocr!.model;
 
@@ -31,7 +32,7 @@ export const geminiOcrProvider: OcrProvider = {
 
     if (!response.ok) {
       const body = await response.text();
-      throw new Error(`OCR Gemini a échoué (${response.status}): ${body.slice(0, 300)}`);
+      throw new ProviderHttpError(response.status, `OCR Gemini a échoué (${response.status}): ${body.slice(0, 300)}`);
     }
 
     const data = await response.json();

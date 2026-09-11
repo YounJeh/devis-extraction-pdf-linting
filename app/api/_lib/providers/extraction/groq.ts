@@ -1,5 +1,6 @@
 import type { ExtractionProvider } from "./types.js";
 import { buildExtractionSystemPrompt, buildExtractionUserPrompt, parseExtractionFields } from "./shared.js";
+import { ProviderHttpError } from "../http-error.js";
 
 const MODEL = "openai/gpt-oss-120b";
 
@@ -27,7 +28,7 @@ export const groqExtractionProvider: ExtractionProvider = {
 
     if (!response.ok) {
       const body = await response.text();
-      throw new Error(`Groq a échoué (${response.status}): ${body.slice(0, 300)}`);
+      throw new ProviderHttpError(response.status, `Groq a échoué (${response.status}): ${body.slice(0, 300)}`);
     }
 
     const data = await response.json();

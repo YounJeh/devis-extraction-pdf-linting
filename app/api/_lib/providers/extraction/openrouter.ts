@@ -1,6 +1,7 @@
 import type { ExtractionProvider } from "./types.js";
 import { buildExtractionSystemPrompt, buildExtractionUserPrompt, parseExtractionFields } from "./shared.js";
 import { PROVIDERS_CONFIG } from "../../config.js";
+import { ProviderHttpError } from "../http-error.js";
 
 const MODEL = PROVIDERS_CONFIG.providers.openrouter.extraction!.model;
 
@@ -28,7 +29,10 @@ export const openRouterExtractionProvider: ExtractionProvider = {
 
     if (!response.ok) {
       const body = await response.text();
-      throw new Error(`Extraction OpenRouter a échoué (${response.status}): ${body.slice(0, 300)}`);
+      throw new ProviderHttpError(
+        response.status,
+        `Extraction OpenRouter a échoué (${response.status}): ${body.slice(0, 300)}`,
+      );
     }
 
     const data = await response.json();
