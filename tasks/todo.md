@@ -167,12 +167,13 @@ gratuit).
 
 **Acceptance criteria :**
 - [ ] `zaiOcrProvider.run()` retourne un `OcrResult` exploitable sur un
-      vrai PDF/image.
-- [ ] Erreur claire si `ZAI_API_KEY` absente.
+      vrai PDF/image — **code écrit (content-part "file" officiel), non
+      testé en conditions réelles**.
+- [x] Erreur claire si `ZAI_API_KEY` absente.
 
 **Verification :**
 - [ ] `OCR_PROVIDER=zai` sur un vrai PDF (**bloqué sur la clé réelle**)
-- [ ] `npm run build` passe
+- [x] `npm run build` passe
 
 **Dependencies :** Task 2, clé `ZAI_API_KEY` renseignée pour le test réel
 
@@ -184,9 +185,10 @@ gratuit).
 ---
 
 ## Checkpoint : OCR
-- [ ] Task 3 testée avec une vraie clé (déjà disponible)
-- [ ] Tasks 4-6 implémentées ; tests réels en attente des clés utilisateur
-- [ ] `npm run build` passe sur l'ensemble
+- [x] Task 3 testée avec une vraie clé (déjà disponible)
+- [x] Tasks 4 et 6 implémentées (Task 5 annulée) ; tests réels en attente
+      des clés OpenRouter/Z.ai
+- [x] `npm run build` passe sur l'ensemble
 
 ## Phase 3 : Providers extraction manquants
 
@@ -249,13 +251,13 @@ comme le font déjà Gemini et Groq.
 
 **Acceptance criteria :**
 - [ ] `zaiExtractionProvider.extract()` retourne un `ExtractionResult`
-      complet.
-- [ ] Erreur claire si `ZAI_API_KEY` absente.
+      complet — **code écrit, non testé en conditions réelles**.
+- [x] Erreur claire si `ZAI_API_KEY` absente.
 
 **Verification :**
 - [ ] `EXTRACTION_PROVIDER=zai` sur un vrai devis (**bloqué sur la clé
       réelle**)
-- [ ] `npm run build` passe
+- [x] `npm run build` passe
 
 **Dependencies :** Task 2, clé `ZAI_API_KEY`
 
@@ -267,8 +269,9 @@ comme le font déjà Gemini et Groq.
 ---
 
 ## Checkpoint : Extraction
-- [ ] Tasks 7-9 implémentées ; tests réels en attente des clés utilisateur
-- [ ] `npm run build` passe sur l'ensemble
+- [x] Tasks 7-9 implémentées ; tests réels en attente des clés
+      OpenRouter/Cloudflare/Z.ai
+- [x] `npm run build` passe sur l'ensemble
 
 ## Phase 4 : Chaîne de bascule générique
 
