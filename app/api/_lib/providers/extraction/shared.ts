@@ -48,6 +48,12 @@ export function buildExtractionUserPrompt(ocr: OcrResult, fields: FieldSpec[]): 
   return `Champs à extraire (id): ${fieldIds}.\n\n${pages}`;
 }
 
+/** Certains providers sans mode JSON garanti (ex: Z.ai) enveloppent leur réponse dans un bloc ```json ... ``` malgré la consigne du prompt. */
+function stripCodeFence(content: string): string {
+  const match = /^```(?:json)?\s*\n([\s\S]*?)\n?```$/.exec(content.trim());
+  return match ? match[1] : content;
+}
+
 export function parseExtractionFields(
   content: string,
   fields: FieldSpec[],
@@ -55,7 +61,7 @@ export function parseExtractionFields(
 ): ExtractedFieldResult[] {
   let parsed: unknown;
   try {
-    parsed = JSON.parse(content);
+    parsed = JSON.parse(stripCodeFence(content));
   } catch {
     throw new Error(`Réponse ${providerLabel} : JSON invalide`);
   }
