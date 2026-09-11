@@ -240,23 +240,20 @@ comme le font déjà Gemini et Groq.
 **Acceptance criteria :**
 - [x] Modèle texte confirmé disponible dans le catalogue Workers AI
       (`@cf/meta/llama-3.3-70b-instruct-fp8-fast`, confirmé officiel).
-- [ ] `cloudflareWorkersAiExtractionProvider.extract()` retourne un
-      `ExtractionResult` complet — **bloqué : 401 "Authentication error"
-      avec la vraie clé fournie**. Diagnostiqué : `curl
-      .../tokens/verify` avec le même token renvoie "Invalid format for
-      Authorization header" — le token fait 32 caractères hexadécimaux,
-      qui est le format d'une **Global API Key** (ancien système,
-      header `X-Auth-Key`/`X-Auth-Email`), pas d'un **API Token** scoped
-      (40+ caractères, header `Authorization: Bearer`, ce que le code
-      envoie — conforme à la doc officielle Cloudflare). Action requise
-      côté utilisateur : créer un vrai API Token sur
-      dash.cloudflare.com/profile/api-tokens (permission "Workers AI -
-      Edit"), pas la Global API Key.
+- [x] `cloudflareWorkersAiExtractionProvider.extract()` retourne un
+      `ExtractionResult` complet — **testé avec une vraie clé, succès**.
+      Deux obstacles réels résolus en route : (1) le premier token fourni
+      était une Global API Key (401, format d'auth incompatible avec
+      `Authorization: Bearer`) — remplacé par un vrai API Token scoped ;
+      (2) une fois authentifié, la réponse s'est révélée suivre le format
+      chat-completions OpenAI (`result.choices[0].message.content`), pas
+      `result.response` (déjà un objet JSON parsé, pas la chaîne attendue)
+      — corrigé dans `extraction/cloudflare-workers-ai.ts`.
 - [x] Erreur claire si clés Cloudflare absentes.
 
 **Verification :**
-- [ ] `EXTRACTION_PROVIDER=cloudflare-workers-ai` sur un vrai devis —
-      **toujours bloqué, voir ci-dessus**
+- [x] `EXTRACTION_PROVIDER=cloudflare-workers-ai` sur un vrai devis →
+      succès, champs correctement extraits
 - [x] `npm run build` passe
 
 **Dependencies :** Task 2, clés Cloudflare
@@ -296,9 +293,8 @@ comme le font déjà Gemini et Groq.
 
 ## Checkpoint : Extraction
 - [x] Task 7 (OpenRouter) testée avec une vraie clé : succès
-- [ ] Task 8 (Cloudflare) : **bloquée**, 401 côté Cloudflare — le token
-      fourni a le format d'une Global API Key, pas d'un API Token scoped
-      (Bearer). Action requise côté utilisateur (voir Task 8 ci-dessus).
+- [x] Task 8 (Cloudflare) testée avec une vraie clé : succès (après
+      remplacement du token et correctif du format de réponse)
 - [x] Task 9 (Z.ai) testée avec une vraie clé : succès (après correctif
       markdown-fence)
 - [x] `npm run build` passe sur l'ensemble
@@ -419,12 +415,13 @@ remplacés par le seuil de contexte générique par provider dans
       vers Gemini)
 - [x] Bascule sur contexte trop grand vérifiée (extraction, groq → gemini)
 - [x] Test end-to-end avec un vrai PDF et de vraies clés : OCR OpenRouter,
-      extraction OpenRouter, extraction Z.ai tous testés avec succès en
-      conditions réelles (deux bugs réels trouvés et corrigés au passage :
-      champ `file_data` Z.ai, modèle OpenRouter gemma-4 remplacé, réponses
-      JSON enveloppées en markdown tolérées). **Cloudflare Workers AI
-      (extraction) reste bloqué : 401, problème de format du token côté
-      utilisateur (Global API Key au lieu d'un API Token scoped).**
+      extraction OpenRouter, OCR/extraction Z.ai, extraction Cloudflare
+      Workers AI tous testés avec succès en conditions réelles. Quatre
+      bugs réels trouvés et corrigés en testant : champ `file_data` Z.ai
+      (était `file_url`), modèle OpenRouter gemma-4 remplacé (429
+      persistant upstream), réponses JSON enveloppées en markdown
+      tolérées (`stripCodeFence`), format de réponse Cloudflare corrigé
+      (`choices[].message.content`, pas `result.response`).
 - [x] `npm run build` passe
 - [ ] Revue avec l'utilisateur avant Phase 5
 
@@ -455,13 +452,10 @@ génériques avec bascule automatique, cœur de l'application.
 ---
 
 ## Checkpoint final
-- [ ] Toutes les tâches ci-dessus cochées — **il reste Task 8 (extraction
-      Cloudflare Workers AI) : bloquée sur un problème de format de
-      credential côté utilisateur (401 "Authentication error" — le token
-      fourni est une Global API Key, pas un API Token scoped). Tout le
-      reste (OpenRouter OCR+extraction, Z.ai OCR+extraction, Gemini OCR,
-      la chaîne de bascule) est testé et fonctionnel en conditions
-      réelles.**
+- [x] Toutes les tâches ci-dessus cochées — tous les providers (Mistral,
+      Groq, Gemini, OpenRouter, Cloudflare Workers AI [extraction
+      uniquement], Z.ai) testés et fonctionnels en conditions réelles,
+      chaîne de bascule vérifiée (429 et contexte trop grand)
 - [x] `choix_techniques.md` à jour
 - [ ] Proposer `/code-review-and-quality`, puis proposer une PR (consigne
       du projet une fois la branche de feature entièrement implémentée) —
