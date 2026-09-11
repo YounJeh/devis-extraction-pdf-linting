@@ -1,15 +1,8 @@
-import type { OcrProvider, OcrPage, OcrResult } from "./types.js";
+import type { OcrProvider } from "./types.js";
+import { OCR_PAGE_MARKER_INSTRUCTION, parsePageMarkedText } from "./shared.js";
 import { PROVIDERS_CONFIG } from "../../config.js";
 
 const MODEL = PROVIDERS_CONFIG.providers.gemini.ocr!.model;
-
-const PAGE_MARKER = /^--- Page (\d+) ---$/;
-
-const OCR_INSTRUCTION =
-  "Transcris fidèlement, en Markdown, l'intégralité du texte de ce document PDF. " +
-  "Ne résume pas, ne commente pas, ne traduis pas. " +
-  'Pour chaque page du document, commence une nouvelle ligne exactement "--- Page N ---" ' +
-  "(N = numéro de page en commençant à 1), suivie du texte complet de cette page.";
 
 export const geminiOcrProvider: OcrProvider = {
   async run(pdfBytes) {
@@ -26,7 +19,7 @@ export const geminiOcrProvider: OcrProvider = {
           contents: [
             {
               parts: [
-                { text: OCR_INSTRUCTION },
+                { text: OCR_PAGE_MARKER_INSTRUCTION },
                 { inlineData: { mimeType: "application/pdf", data: base64 } },
               ],
             },
@@ -47,40 +40,6 @@ export const geminiOcrProvider: OcrProvider = {
       throw new Error("Réponse OCR Gemini sans contenu exploitable");
     }
 
-    return parseToOcrResult(content);
+    return parsePageMarkedText(content);
   },
 };
-
-/**
- * Gemini ne renvoie ni découpage en pages structuré ni bounding boxes
- * (contrairement à Mistral OCR) — on reconstruit les pages à partir des
- * marqueurs "--- Page N ---" demandés dans le prompt. `items` reste vide.
- */
-function parseToOcrResult(content: string): OcrResult {
-  const lines = content.split("\n");
-  const pages: OcrPage[] = [];
-  let current: { pageNumber: number; lines: string[] } | null = null;
-
-  for (const line of lines) {
-    const match = PAGE_MARKER.exec(line.trim());
-    if (match) {
-      if (current) pages.push(toPage(current));
-      current = { pageNumber: Number(match[1]), lines: [] };
-    } else if (current) {
-      current.lines.push(line);
-    }
-  }
-  if (current) pages.push(toPage(current));
-
-  if (pages.length === 0) {
-    // Le modèle n'a pas suivi le format de marqueurs demandé : on renvoie
-    // tout le contenu comme une page unique plutôt que de perdre le texte.
-    pages.push({ pageNumber: 1, text: content.trim(), items: [] });
-  }
-
-  return { pages };
-}
-
-function toPage(current: { pageNumber: number; lines: string[] }): OcrPage {
-  return { pageNumber: current.pageNumber, text: current.lines.join("\n").trim(), items: [] };
-}

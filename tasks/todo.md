@@ -86,19 +86,20 @@ les deux ordres d'essai. Suivre le pattern `fields.config.json` +
 réponse vers `OcrResult`.
 
 **Acceptance criteria :**
-- [ ] `geminiOcrProvider.run()` retourne un `OcrResult` avec au moins
+- [x] `geminiOcrProvider.run()` retourne un `OcrResult` avec au moins
       `pages[].text` rempli à partir d'un vrai PDF (`items` peut rester
       vide si Gemini ne renvoie pas de bounding boxes — à documenter dans
       un commentaire si c'est le cas).
-- [ ] Erreur claire si `GEMINI_API_KEY` absente (cohérent avec les autres
+- [x] Erreur claire si `GEMINI_API_KEY` absente (cohérent avec les autres
       providers).
-- [ ] Modèle utilisé = celui déclaré dans `providers.config.json` pour
+- [x] Modèle utilisé = celui déclaré dans `providers.config.json` pour
       `gemini.ocr.model` (pas une constante dupliquée).
 
 **Verification :**
-- [ ] `OCR_PROVIDER=gemini` sur un vrai PDF via l'app locale → texte
-      exploitable dans la réponse
-- [ ] `npm run build` passe
+- [x] Testé directement (script jetable hors repo) avec une vraie clé sur
+      un PDF de test à 2 pages → texte transcrit fidèlement, pages
+      correctement découpées
+- [x] `npm run build` passe
 
 **Dependencies :** Task 2
 
