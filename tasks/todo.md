@@ -11,15 +11,15 @@ fournisseurs, avec commentaires (lien console). Livré isolément en premier
 pour que l'utilisateur puisse commencer à renseigner ses clés.
 
 **Acceptance criteria :**
-- [ ] `OPENROUTER_API_KEY`, `ZAI_API_KEY`, `CLOUDFLARE_API_TOKEN`,
+- [x] `OPENROUTER_API_KEY`, `ZAI_API_KEY`, `CLOUDFLARE_API_TOKEN`,
       `CLOUDFLARE_ACCOUNT_ID` présentes dans `app/.env.example` avec un
       commentaire (lien vers la console du fournisseur), même style que
       les clés existantes.
-- [ ] `app/.env` (local, non versionné) reçoit les mêmes clés vides — pour
+- [x] `app/.env` (local, non versionné) reçoit les mêmes clés vides — pour
       que l'utilisateur les remplisse au même endroit qu'aujourd'hui.
 
 **Verification :**
-- [ ] Relecture visuelle du diff (pas de build/test dédié pour un fichier
+- [x] Relecture visuelle du diff (pas de build/test dédié pour un fichier
       d'env)
 
 **Dependencies :** None
@@ -39,24 +39,27 @@ les deux ordres d'essai. Suivre le pattern `fields.config.json` +
 `config/schema.ts` (validation à l'import, erreurs explicites).
 
 **Acceptance criteria :**
-- [ ] `providers.config.json` contient une entrée par provider (mistral,
+- [x] `providers.config.json` contient une entrée par provider (mistral,
       groq, gemini, openrouter, cloudflare-workers-ai, zai) avec
       `apiKeyEnv` (+ `accountIdEnv` pour Cloudflare), et selon capacité
       `ocr: { model, freeQuota }` / `extraction: { model, freeQuota,
       contextCharThreshold? }`.
-- [ ] `ocrOrder` et `extractionOrder` (tableaux de noms de provider)
+- [x] `ocrOrder` et `extractionOrder` (tableaux de noms de provider)
       présents et cohérents avec les providers déclarés.
-- [ ] Une fonction de validation (type `validateProvidersConfig`, dans
+- [x] Une fonction de validation (type `validateProvidersConfig`, dans
       l'esprit de `validateExtractionConfig`) rejette une config
       incohérente (provider dans l'ordre mais non déclaré, `apiKeyEnv`
       manquant, etc.) avec un message clair.
-- [ ] Import côté serverless utilise `with { type: "json" }` (cf. bug
+- [x] Import côté serverless utilise `with { type: "json" }` (cf. bug
       documenté dans `choix_techniques.md` sur `fields.config.json`).
 
 **Verification :**
-- [ ] `npm run build` (ou `tsc --noEmit`) passe
-- [ ] Test manuel : casser volontairement le JSON (provider absent de
-      l'ordre) → l'erreur de validation apparaît au chargement
+- [x] `npm run build` (ou `tsc --noEmit`) passe
+- [x] Test manuel (script tsx jetable, supprimé après usage) : config
+      réelle valide + 5 cas cassés (apiKeyEnv manquant, provider sans
+      capacité, ordre référençant un provider inconnu ou une capacité non
+      déclarée, ordre vide) → toutes les erreurs de validation attendues
+      sont levées avec un message clair
 
 **Dependencies :** Task 1 (les noms de clés doivent correspondre)
 
@@ -70,8 +73,8 @@ les deux ordres d'essai. Suivre le pattern `fields.config.json` +
 ---
 
 ## Checkpoint : Fondations
-- [ ] `providers.config.json` valide contre son schema
-- [ ] `.env.example` à jour — **signaler à l'utilisateur que c'est prêt
+- [x] `providers.config.json` valide contre son schema
+- [x] `.env.example` à jour — **signaler à l'utilisateur que c'est prêt
       pour qu'il renseigne les vraies clés Cloudflare/Z.ai/OpenRouter**
 - [ ] Revue avec l'utilisateur avant de continuer
 
