@@ -117,16 +117,16 @@ gratuits vision-capable via `GET https://openrouter.ai/api/v1/models`
 (la liste "free" change souvent).
 
 **Acceptance criteria :**
-- [ ] Modèle confirmé disponible et gratuit au moment du codage (pas
-      seulement celui du plan).
+- [x] Modèle confirmé disponible et gratuit au moment du codage (relevé
+      via `GET /api/v1/models` le 2026-09-11 : `google/gemma-4-31b-it:free`).
 - [ ] `openRouterOcrProvider.run()` retourne un `OcrResult` exploitable sur
-      un vrai PDF/image.
-- [ ] Erreur claire si `OPENROUTER_API_KEY` absente.
+      un vrai PDF/image — **code écrit, non testé en conditions réelles**.
+- [x] Erreur claire si `OPENROUTER_API_KEY` absente.
 
 **Verification :**
 - [ ] `OCR_PROVIDER=openrouter` sur un vrai PDF (**bloqué sur la clé
       réelle** — voir checkpoint Phase 1)
-- [ ] `npm run build` passe
+- [x] `npm run build` passe
 
 **Dependencies :** Task 2, clé `OPENROUTER_API_KEY` renseignée par
 l'utilisateur pour le test réel (le code peut être écrit avant, le test
@@ -139,30 +139,25 @@ d'intégration attend la clé)
 
 ---
 
-### Task 5 : OCR Cloudflare Workers AI
-**Description :** Implémenter `ocr/cloudflare-workers-ai.ts` avec un
-modèle vision (`@cf/meta/llama-3.2-11b-vision-instruct` ou équivalent
-disponible), auth via `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`.
+### Task 5 : OCR Cloudflare Workers AI — **ANNULÉE**
+**Description initiale :** Implémenter `ocr/cloudflare-workers-ai.ts` avec
+un modèle vision, auth via `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`.
 
-**Acceptance criteria :**
-- [ ] Modèle confirmé disponible dans le catalogue Workers AI au moment du
-      codage.
-- [ ] `cloudflareWorkersAiOcrProvider.run()` retourne un `OcrResult`
-      exploitable.
-- [ ] Erreur claire si `CLOUDFLARE_API_TOKEN` ou `CLOUDFLARE_ACCOUNT_ID`
-      absente.
+**Pourquoi annulée :** le seul modèle vision de Cloudflare Workers AI
+(`@cf/meta/llama-3.2-11b-vision-instruct`) n'accepte qu'une image, pas un
+PDF multi-page — contrairement à Mistral/Gemini/OpenRouter qui acceptent
+le PDF directement (natif ou via plugin `file-parser`). Rasteriser côté
+serveur aurait demandé une nouvelle dépendance (pdfjs-dist + backend
+canvas natif), non prévue au plan et fragile en fonction serverless.
+Décision validée avec l'utilisateur : Cloudflare Workers AI ne déclare que
+la capacité `extraction` dans `providers.config.json` (Task 8), retiré de
+`ocrOrder`. Le stub `ocr/cloudflare-workers-ai.ts` reste en place avec un
+message d'erreur explicite, atteignable seulement via
+`OCR_PROVIDER=cloudflare-workers-ai` (override manuel explicite).
 
-**Verification :**
-- [ ] `OCR_PROVIDER=cloudflare-workers-ai` sur un vrai PDF (**bloqué sur
-      la clé réelle**)
-- [ ] `npm run build` passe
-
-**Dependencies :** Task 2, clés Cloudflare renseignées pour le test réel
-
-**Files likely touched :**
+**Files touched (pour documenter la décision) :**
+- `app/config/providers.config.json`
 - `app/api/_lib/providers/ocr/cloudflare-workers-ai.ts`
-
-**Estimated scope :** S
 
 ---
 
@@ -202,15 +197,17 @@ texte `:free`, en réutilisant `shared.ts`
 comme le font déjà Gemini et Groq.
 
 **Acceptance criteria :**
-- [ ] Modèle confirmé disponible et gratuit au moment du codage.
+- [x] Modèle confirmé disponible et gratuit au moment du codage (relevé
+      via `GET /api/v1/models` le 2026-09-11 : `google/gemma-4-26b-a4b-it:free`).
 - [ ] `openRouterExtractionProvider.extract()` retourne un
-      `ExtractionResult` complet (fields, model, usage si disponible).
-- [ ] Erreur claire si `OPENROUTER_API_KEY` absente.
+      `ExtractionResult` complet (fields, model, usage si disponible) —
+      **code écrit, non testé en conditions réelles**.
+- [x] Erreur claire si `OPENROUTER_API_KEY` absente.
 
 **Verification :**
 - [ ] `EXTRACTION_PROVIDER=openrouter` sur un vrai devis (**bloqué sur la
       clé réelle**)
-- [ ] `npm run build` passe
+- [x] `npm run build` passe
 
 **Dependencies :** Task 2, clé `OPENROUTER_API_KEY`
 
@@ -225,15 +222,17 @@ comme le font déjà Gemini et Groq.
 **Description :** Implémenter `extraction/cloudflare-workers-ai.ts`.
 
 **Acceptance criteria :**
-- [ ] Modèle texte confirmé disponible dans le catalogue Workers AI.
+- [x] Modèle texte confirmé disponible dans le catalogue Workers AI
+      (`@cf/meta/llama-3.3-70b-instruct-fp8-fast`, confirmé officiel).
 - [ ] `cloudflareWorkersAiExtractionProvider.extract()` retourne un
-      `ExtractionResult` complet.
-- [ ] Erreur claire si clés Cloudflare absentes.
+      `ExtractionResult` complet — **code écrit, non testé en conditions
+      réelles** (pas de mode JSON confirmé côté API, à surveiller).
+- [x] Erreur claire si clés Cloudflare absentes.
 
 **Verification :**
 - [ ] `EXTRACTION_PROVIDER=cloudflare-workers-ai` sur un vrai devis
       (**bloqué sur la clé réelle**)
-- [ ] `npm run build` passe
+- [x] `npm run build` passe
 
 **Dependencies :** Task 2, clés Cloudflare
 

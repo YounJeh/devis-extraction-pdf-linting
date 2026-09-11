@@ -73,12 +73,22 @@ précis.
 | Groq | Extraction ✅ (déjà implémenté) | `openai/gpt-oss-120b` | 30 RPM / 1 000 RPD / 8 000 TPM | [console.groq.com/docs/rate-limits](https://console.groq.com/docs/rate-limits) (officiel) |
 | Gemini | Extraction ✅ (déjà implémenté), OCR à implémenter | `gemini-3.1-flash-lite` | ~15 RPM / ~1 000-1 500 RPD / ~250k TPM (agrégateurs, page officielle ne détaille pas les chiffres par tier) | [ai.google.dev/gemini-api/docs/rate-limits](https://ai.google.dev/gemini-api/docs/rate-limits) + agrégateurs (tokenmix.ai, aipromptshub.co) |
 | OpenRouter | OCR + extraction à implémenter | Modèle `:free` à confirmer au moment de coder (liste change souvent) | 20 RPM ; 50 RPD sans crédit acheté, 1 000 RPD si ≥ 10 $ de crédit historique | [openrouter.ai/docs/api-reference/limits](https://openrouter.ai/docs/api-reference/limits) (officiel) |
-| Cloudflare Workers AI | OCR + extraction à implémenter | OCR : `@cf/meta/llama-3.2-11b-vision-instruct` · Extraction : `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (à confirmer dispo) | 10 000 Neurons/jour, **pool partagé entre OCR et extraction** (pas un quota séparé par tâche) | [developers.cloudflare.com/workers-ai/platform/pricing](https://developers.cloudflare.com/workers-ai/platform/pricing/) (officiel) |
+| Cloudflare Workers AI | Extraction à implémenter. **OCR écarté** — voir note | Extraction : `@cf/meta/llama-3.3-70b-instruct-fp8-fast` | 10 000 Neurons/jour, **pool partagé entre OCR et extraction si les deux étaient utilisées** (pas un quota séparé par tâche) | [developers.cloudflare.com/workers-ai/platform/pricing](https://developers.cloudflare.com/workers-ai/platform/pricing/) (officiel) |
 | Z.ai | OCR + extraction à implémenter | OCR : `glm-4.6v-flash` (vision, gratuit) · Extraction : `glm-4.7-flash` ou `glm-4.5-flash` (gratuit) | Gratuit mais limites non publiées publiquement ; une source tierce rapporte 1 requête concurrente pour `glm-4.6v-flash` — à vérifier au moment de créer la clé | [docs.z.ai/guides/overview/pricing](https://docs.z.ai/guides/overview/pricing) (officiel, sans détail RPM/RPD) |
 
-**Ordre d'essai proposé** (à valider avec l'utilisateur — voir Open
-Questions) :
-- OCR : `mistral` → `gemini` → `openrouter` → `cloudflare-workers-ai` → `zai`
+**Note (découverte en implémentant Task 5)** : le seul modèle vision de
+Cloudflare Workers AI (`@cf/meta/llama-3.2-11b-vision-instruct`) n'accepte
+qu'une image, pas un PDF multi-page — contrairement à
+Mistral/Gemini/OpenRouter qui acceptent le PDF directement. Rasteriser
+chaque page côté serveur aurait demandé une nouvelle dépendance de rendu
+PDF→image (ex. `pdfjs-dist` + un backend canvas natif), non prévue au
+plan et fragile en fonction serverless. **Décision validée avec
+l'utilisateur : Cloudflare Workers AI ne déclare que la capacité
+extraction**, cohérent avec le "si possible" de la demande initiale.
+
+**Ordre d'essai** (confirmé par l'utilisateur, ajusté après le retrait de
+l'OCR Cloudflare) :
+- OCR : `mistral` → `gemini` → `openrouter` → `zai`
 - Extraction : `groq` → `gemini` → `openrouter` → `cloudflare-workers-ai` → `zai`
 
 Logique : les deux providers déjà éprouvés et implémentés restent en tête ;
@@ -116,16 +126,17 @@ l'extraction réduit le risque de l'épuiser sur une seule tâche).
 - [ ] **Task 4** — OCR OpenRouter (`.../ocr/openrouter.ts`) : modèle vision
       `:free` confirmé au moment de coder (vérifier via
       `GET https://openrouter.ai/api/v1/models`).
-- [ ] **Task 5** — OCR Cloudflare Workers AI (`.../ocr/cloudflare-workers-ai.ts`)
-      : `@cf/meta/llama-3.2-11b-vision-instruct` (ou équivalent dispo),
-      auth par `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`.
+- [x] ~~Task 5 — OCR Cloudflare Workers AI~~ **annulée** : le modèle vision
+      disponible n'accepte qu'une image, pas un PDF multi-page (voir note
+      Provider Matrix ci-dessus). Cloudflare Workers AI ne déclare que la
+      capacité extraction.
 - [ ] **Task 6** — OCR Z.ai (`.../ocr/zai.ts`) : `glm-4.6v-flash`.
 
 ### Checkpoint : OCR
 - [ ] Chaque nouveau provider testable individuellement via
       `OCR_PROVIDER=<nom>` (override manuel existant) sur un vrai PDF —
-      **bloqué sur les clés réelles pour openrouter/cloudflare/zai**, voir
-      Open Questions / point de blocage.
+      **bloqué sur les clés réelles pour openrouter/zai**, voir Open
+      Questions / point de blocage.
 - [ ] `npm run build` (ou équivalent TS) passe.
 
 ### Phase 3 : Providers extraction manquants
