@@ -67,18 +67,11 @@
     "cloudflare-workers-ai": {
       "apiKeyEnv": "CLOUDFLARE_API_TOKEN",
       "accountIdEnv": "CLOUDFLARE_ACCOUNT_ID",
-      "ocr": {
-        "model": "@cf/meta/llama-3.2-11b-vision-instruct",
-        "freeQuota": {
-          "neuronsPerDay": 10000,
-          "note": "Pool de neurones partagé entre OCR et extraction (pas un quota séparé par tâche). Source officielle : developers.cloudflare.com/workers-ai/platform/pricing (2026-09)."
-        }
-      },
       "extraction": {
         "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
         "freeQuota": {
           "neuronsPerDay": 10000,
-          "note": "Même pool que l'OCR — voir note ci-dessus. Modèle à confirmer disponible au moment d'implémenter (Task 8)."
+          "note": "Pas d'OCR : le modèle vision Workers AI (@cf/meta/llama-3.2-11b-vision-instruct) n'accepte qu'une image, pas un PDF multi-page — écarté (voir choix_techniques.md). Source officielle : developers.cloudflare.com/workers-ai/platform/pricing (2026-09)."
         }
       }
     },
@@ -98,6 +91,6 @@
       }
     }
   },
-  "ocrOrder": ["mistral", "gemini", "openrouter", "cloudflare-workers-ai", "zai"],
+  "ocrOrder": ["mistral", "gemini", "openrouter", "zai"],
   "extractionOrder": ["groq", "gemini", "openrouter", "cloudflare-workers-ai", "zai"]
 }
