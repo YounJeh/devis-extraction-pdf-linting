@@ -42,7 +42,10 @@ export const cloudflareWorkersAiExtractionProvider: ExtractionProvider = {
     if (data.success === false) {
       throw new Error(`Extraction Cloudflare Workers AI a échoué: ${JSON.stringify(data.errors).slice(0, 300)}`);
     }
-    const content = data.result?.response;
+    // La réponse Workers AI est au format chat-completions OpenAI
+    // (choices[0].message.content) — result.response existe aussi mais est
+    // déjà un objet JSON parsé, pas la chaîne attendue par parseExtractionFields.
+    const content = data.result?.choices?.[0]?.message?.content;
     if (typeof content !== "string") {
       throw new Error("Réponse Cloudflare Workers AI sans contenu exploitable");
     }
