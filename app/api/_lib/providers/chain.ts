@@ -62,10 +62,11 @@ export async function runChain<T>(
     }
   }
 
-  throw new ChainError(
-    `Tous les providers ont épuisé leur quota gratuit : ${order.join(", ")}`,
-    attempts,
-  );
+  throw new ChainError(`Tous les providers ont été sautés : ${summarizeAttempts(attempts)}`, attempts);
+}
+
+function summarizeAttempts(attempts: ChainAttempt[]): string {
+  return attempts.map((a) => `${a.provider} (${a.outcome === "skipped_quota" ? "quota dépassé" : "contexte trop grand"})`).join(", ");
 }
 
 function errorMessage(error: unknown): string {
