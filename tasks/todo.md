@@ -403,13 +403,13 @@ alternatives écartées) sur le passage à une chaîne de fournisseurs
 génériques avec bascule automatique, cœur de l'application.
 
 **Acceptance criteria :**
-- [ ] Entrée cohérente avec le style existant (court, factuel, pas de
+- [x] Entrée cohérente avec le style existant (court, factuel, pas de
       redite du code).
-- [ ] Mentionne explicitement le remplacement de
-      `LARGE_DOC_EXTRACTION_PROVIDER` s'il a été retiré (Task 12).
+- [x] Mentionne explicitement le remplacement de
+      `LARGE_DOC_EXTRACTION_PROVIDER`.
 
 **Verification :**
-- [ ] Relecture — respecte la consigne projet ("très bref et synthétique",
+- [x] Relecture — respecte la consigne projet ("très bref et synthétique",
       "uniquement ce qui touche au cœur de l'application")
 
 **Dependencies :** Task 12
@@ -422,7 +422,12 @@ génériques avec bascule automatique, cœur de l'application.
 ---
 
 ## Checkpoint final
-- [ ] Toutes les tâches ci-dessus cochées
-- [ ] `choix_techniques.md` à jour
+- [ ] Toutes les tâches ci-dessus cochées — **il reste le test réel en
+      conditions live pour OpenRouter, Z.ai et Cloudflare Workers AI
+      (extraction) : code écrit et buildé, bloqué sur les clés API**
+      (`OPENROUTER_API_KEY`, `ZAI_API_KEY`, `CLOUDFLARE_API_TOKEN`,
+      `CLOUDFLARE_ACCOUNT_ID` — toujours vides dans `app/.env` à ce stade)
+- [x] `choix_techniques.md` à jour
 - [ ] Proposer `/code-review-and-quality`, puis proposer une PR (consigne
-      du projet une fois la branche de feature entièrement implémentée)
+      du projet une fois la branche de feature entièrement implémentée) —
+      **à faire une fois les tests réels ci-dessus passés**
