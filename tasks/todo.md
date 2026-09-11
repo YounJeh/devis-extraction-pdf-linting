@@ -457,6 +457,14 @@ génériques avec bascule automatique, cœur de l'application.
       uniquement], Z.ai) testés et fonctionnels en conditions réelles,
       chaîne de bascule vérifiée (429 et contexte trop grand)
 - [x] `choix_techniques.md` à jour
-- [ ] Proposer `/code-review-and-quality`, puis proposer une PR (consigne
-      du projet une fois la branche de feature entièrement implémentée) —
-      **à faire une fois les tests réels ci-dessus passés**
+- [x] `/code-review-and-quality` effectuée. 4 points relevés, tous
+      corrigés (aucun n'était bloquant) : (1) modèle non lu depuis
+      `providers.config.json` pour Mistral/Groq/Gemini — corrigé ; (2)
+      mapping d'usage dupliqué dans 4 providers — extrait dans
+      `mapOpenAiUsage` (`extraction/shared.ts`) ; (3) message
+      d'épuisement de la chaîne présumait "quota" même en cas de
+      `skipped_context` — corrigé ; (4) ordre des content-parts OCR
+      incohérent entre OpenRouter et Z.ai — aligné (nit). Revérifié en
+      conditions réelles après coup, aucune régression.
+- [ ] Proposer une PR (consigne du projet une fois la branche de feature
+      entièrement implémentée et revue)
