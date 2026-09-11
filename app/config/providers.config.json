@@ -1,0 +1,103 @@
+{
+  "providers": {
+    "mistral": {
+      "apiKeyEnv": "MISTRAL_API_KEY",
+      "ocr": {
+        "model": "mistral-ocr-latest",
+        "freeQuota": {
+          "note": "Non publié précisément par Mistral (\"Experiment tier\", ~1 milliard de tokens/mois tous modèles confondus). Source : docs.mistral.ai/deployment/laplateforme/tier (2026-09)."
+        }
+      }
+    },
+    "groq": {
+      "apiKeyEnv": "GROQ_API_KEY",
+      "extraction": {
+        "model": "openai/gpt-oss-120b",
+        "freeQuota": {
+          "rpm": 30,
+          "rpd": 1000,
+          "tpm": 8000,
+          "note": "Source officielle : console.groq.com/docs/rate-limits (2026-09)."
+        },
+        "contextCharThreshold": 24000
+      }
+    },
+    "gemini": {
+      "apiKeyEnv": "GEMINI_API_KEY",
+      "ocr": {
+        "model": "gemini-3.1-flash-lite",
+        "freeQuota": {
+          "rpm": 15,
+          "rpd": 1000,
+          "tpm": 250000,
+          "note": "Approximatif (agrégateurs tiers, page officielle sans détail par palier) — à vérifier dans AI Studio. Source : ai.google.dev/gemini-api/docs/rate-limits (2026-09)."
+        }
+      },
+      "extraction": {
+        "model": "gemini-3.1-flash-lite",
+        "freeQuota": {
+          "rpm": 15,
+          "rpd": 1000,
+          "tpm": 250000,
+          "note": "Approximatif — voir note du bloc ocr ci-dessus."
+        }
+      }
+    },
+    "openrouter": {
+      "apiKeyEnv": "OPENROUTER_API_KEY",
+      "ocr": {
+        "model": "google/gemma-4-31b-it:free",
+        "freeQuota": {
+          "rpm": 20,
+          "rpd": 50,
+          "rpdWithCredits": 1000,
+          "note": "Source officielle : openrouter.ai/docs/api-reference/limits (2026-09). Modèle relevé via GET https://openrouter.ai/api/v1/models le 2026-09-11 (10 modèles vision \":free\" dispo à cette date) — reconfirmer au moment d'implémenter (Task 4), la liste change souvent."
+        }
+      },
+      "extraction": {
+        "model": "google/gemma-4-26b-a4b-it:free",
+        "freeQuota": {
+          "rpm": 20,
+          "rpd": 50,
+          "rpdWithCredits": 1000,
+          "note": "Source officielle : openrouter.ai/docs/api-reference/limits (2026-09). Modèle relevé via GET https://openrouter.ai/api/v1/models le 2026-09-11 — reconfirmer au moment d'implémenter (Task 7)."
+        }
+      }
+    },
+    "cloudflare-workers-ai": {
+      "apiKeyEnv": "CLOUDFLARE_API_TOKEN",
+      "accountIdEnv": "CLOUDFLARE_ACCOUNT_ID",
+      "ocr": {
+        "model": "@cf/meta/llama-3.2-11b-vision-instruct",
+        "freeQuota": {
+          "neuronsPerDay": 10000,
+          "note": "Pool de neurones partagé entre OCR et extraction (pas un quota séparé par tâche). Source officielle : developers.cloudflare.com/workers-ai/platform/pricing (2026-09)."
+        }
+      },
+      "extraction": {
+        "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "freeQuota": {
+          "neuronsPerDay": 10000,
+          "note": "Même pool que l'OCR — voir note ci-dessus. Modèle à confirmer disponible au moment d'implémenter (Task 8)."
+        }
+      }
+    },
+    "zai": {
+      "apiKeyEnv": "ZAI_API_KEY",
+      "ocr": {
+        "model": "glm-4.6v-flash",
+        "freeQuota": {
+          "note": "Gratuit, limites non publiées publiquement par Z.ai. Une source tierce rapporte 1 requête concurrente pour glm-4.6v-flash — à vérifier au moment d'implémenter (Task 6). Source officielle (sans chiffres) : docs.z.ai/guides/overview/pricing (2026-09)."
+        }
+      },
+      "extraction": {
+        "model": "glm-4.7-flash",
+        "freeQuota": {
+          "note": "Gratuit, \"pas de plafond annoncé publiquement\" pour les modèles Flash selon Z.ai. Source officielle (sans chiffres) : docs.z.ai/guides/overview/pricing (2026-09)."
+        }
+      }
+    }
+  },
+  "ocrOrder": ["mistral", "gemini", "openrouter", "cloudflare-workers-ai", "zai"],
+  "extractionOrder": ["groq", "gemini", "openrouter", "cloudflare-workers-ai", "zai"]
+}
