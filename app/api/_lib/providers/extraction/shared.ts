@@ -1,6 +1,7 @@
 import type { ExtractedFieldResult } from "./types.js";
 import type { ExtractionConfig, FieldSpec } from "../../../../config/schema.js";
 import type { OcrResult } from "../ocr/types.js";
+import type { GenerationUsage } from "../../tracing/types.js";
 
 const PROTOCOL_RULES =
   'Réponds uniquement en JSON avec un objet {"fields": [{"id": string, ' +
@@ -48,6 +49,12 @@ export function buildExtractionUserPrompt(ocr: OcrResult, fields: FieldSpec[]): 
   return `Champs à extraire (id): ${fieldIds}.\n\n${pages}`;
 }
 
+/** Certains providers sans mode JSON garanti (ex: Z.ai) enveloppent leur réponse dans un bloc ```json ... ``` malgré la consigne du prompt. */
+function stripCodeFence(content: string): string {
+  const match = /^```(?:json)?\s*\n([\s\S]*?)\n?```$/.exec(content.trim());
+  return match ? match[1] : content;
+}
+
 export function parseExtractionFields(
   content: string,
   fields: FieldSpec[],
@@ -55,7 +62,7 @@ export function parseExtractionFields(
 ): ExtractedFieldResult[] {
   let parsed: unknown;
   try {
-    parsed = JSON.parse(content);
+    parsed = JSON.parse(stripCodeFence(content));
   } catch {
     throw new Error(`Réponse ${providerLabel} : JSON invalide`);
   }
@@ -80,4 +87,11 @@ export function parseExtractionFields(
       page: typeof raw?.page === "number" ? raw.page : null,
     };
   });
+}
+
+/** Format d'usage partagé par les providers chat-completions OpenAI-compatible (Groq, OpenRouter, Z.ai, Cloudflare Workers AI). */
+export function mapOpenAiUsage(usage: unknown): GenerationUsage | undefined {
+  if (!usage || typeof usage !== "object") return undefined;
+  const raw = usage as { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
+  return { input: raw.prompt_tokens, output: raw.completion_tokens, total: raw.total_tokens };
 }

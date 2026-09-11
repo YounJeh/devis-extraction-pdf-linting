@@ -1,7 +1,9 @@
 import type { ExtractionProvider } from "./types.js";
 import { buildExtractionSystemPrompt, buildExtractionUserPrompt, parseExtractionFields } from "./shared.js";
+import { ProviderHttpError } from "../http-error.js";
+import { PROVIDERS_CONFIG } from "../../config.js";
 
-const MODEL = "gemini-3.1-flash-lite";
+const MODEL = PROVIDERS_CONFIG.providers.gemini.extraction!.model;
 
 export const geminiExtractionProvider: ExtractionProvider = {
   async extract(ocr, config) {
@@ -23,7 +25,7 @@ export const geminiExtractionProvider: ExtractionProvider = {
 
     if (!response.ok) {
       const body = await response.text();
-      throw new Error(`Gemini a échoué (${response.status}): ${body.slice(0, 300)}`);
+      throw new ProviderHttpError(response.status, `Gemini a échoué (${response.status}): ${body.slice(0, 300)}`);
     }
 
     const data = await response.json();

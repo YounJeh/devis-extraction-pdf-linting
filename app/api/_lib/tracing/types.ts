@@ -22,14 +22,17 @@ export interface GenerationHandle extends TraceHandle {
  * traceOcr (span) puis traceExtraction (generation) — même structure que
  * app/tools/tracer.py côté pipeline Python (trace_run / pdf_extraction /
  * ner_extraction).
+ *
+ * Le provider effectivement utilisé n'est plus connu avant l'appel (la
+ * chaîne de bascule peut essayer plusieurs providers) : contrairement à
+ * traceRequest, traceOcr/traceExtraction ne prennent plus de `provider` en
+ * paramètre — le callback appelle `handle.setMetadata({ provider,
+ * attempts })` une fois la chaîne résolue.
  */
 export interface Tracer {
   traceRequest<T>(fn: (handle: TraceHandle) => Promise<T>): Promise<T>;
-  traceOcr<T>(params: { provider: string }, fn: (handle: TraceHandle) => Promise<T>): Promise<T>;
-  traceExtraction<T>(
-    params: { provider: string; reason: string },
-    fn: (handle: GenerationHandle) => Promise<T>,
-  ): Promise<T>;
+  traceOcr<T>(fn: (handle: TraceHandle) => Promise<T>): Promise<T>;
+  traceExtraction<T>(fn: (handle: GenerationHandle) => Promise<T>): Promise<T>;
   /** Force l'envoi des traces en attente — nécessaire en serverless (process tué juste après la réponse). */
   flush(): Promise<void>;
 }

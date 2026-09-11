@@ -65,9 +65,8 @@ export const langfuseTracer: Tracer = {
     });
   },
 
-  async traceOcr({ provider }, fn) {
+  async traceOcr(fn) {
     return startActiveObservation("ocr", async (span) => {
-      span.update({ metadata: { provider } });
       const handle = makeSpanHandle(span);
       try {
         return await fn(handle);
@@ -78,11 +77,10 @@ export const langfuseTracer: Tracer = {
     });
   },
 
-  async traceExtraction({ provider, reason }, fn) {
+  async traceExtraction(fn) {
     return startActiveObservation(
       "extraction",
       async (generation) => {
-        generation.update({ metadata: { provider, reason } });
         const handle = makeGenerationHandle(generation);
         try {
           return await fn(handle);

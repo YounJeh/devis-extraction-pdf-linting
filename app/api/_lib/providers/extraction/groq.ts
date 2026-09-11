@@ -1,7 +1,9 @@
 import type { ExtractionProvider } from "./types.js";
-import { buildExtractionSystemPrompt, buildExtractionUserPrompt, parseExtractionFields } from "./shared.js";
+import { buildExtractionSystemPrompt, buildExtractionUserPrompt, parseExtractionFields, mapOpenAiUsage } from "./shared.js";
+import { ProviderHttpError } from "../http-error.js";
+import { PROVIDERS_CONFIG } from "../../config.js";
 
-const MODEL = "openai/gpt-oss-120b";
+const MODEL = PROVIDERS_CONFIG.providers.groq.extraction!.model;
 
 export const groqExtractionProvider: ExtractionProvider = {
   async extract(ocr, config) {
@@ -27,7 +29,7 @@ export const groqExtractionProvider: ExtractionProvider = {
 
     if (!response.ok) {
       const body = await response.text();
-      throw new Error(`Groq a échoué (${response.status}): ${body.slice(0, 300)}`);
+      throw new ProviderHttpError(response.status, `Groq a échoué (${response.status}): ${body.slice(0, 300)}`);
     }
 
     const data = await response.json();
@@ -39,13 +41,7 @@ export const groqExtractionProvider: ExtractionProvider = {
     return {
       fields: parseExtractionFields(content, config.fields, "Groq"),
       model: MODEL,
-      usage: data.usage
-        ? {
-            input: data.usage.prompt_tokens,
-            output: data.usage.completion_tokens,
-            total: data.usage.total_tokens,
-          }
-        : undefined,
+      usage: mapOpenAiUsage(data.usage),
     };
   },
 };

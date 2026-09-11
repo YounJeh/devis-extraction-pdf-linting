@@ -1,4 +1,8 @@
 import type { OcrProvider, OcrResult } from "./types.js";
+import { ProviderHttpError } from "../http-error.js";
+import { PROVIDERS_CONFIG } from "../../config.js";
+
+const MODEL = PROVIDERS_CONFIG.providers.mistral.ocr!.model;
 
 interface MistralOcrBlock {
   top_left_x: number;
@@ -33,7 +37,7 @@ export const mistralOcrProvider: OcrProvider = {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "mistral-ocr-latest",
+        model: MODEL,
         document: {
           type: "document_url",
           document_url: `data:application/pdf;base64,${base64}`,
@@ -44,7 +48,7 @@ export const mistralOcrProvider: OcrProvider = {
 
     if (!response.ok) {
       const body = await response.text();
-      throw new Error(`Mistral OCR a échoué (${response.status}): ${body.slice(0, 300)}`);
+      throw new ProviderHttpError(response.status, `Mistral OCR a échoué (${response.status}): ${body.slice(0, 300)}`);
     }
 
     const data = (await response.json()) as MistralOcrResponse;

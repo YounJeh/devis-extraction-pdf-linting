@@ -18,10 +18,10 @@ export const noOpTracer: Tracer = {
   async traceRequest(fn) {
     return fn(noOpHandle);
   },
-  async traceOcr(_params, fn) {
+  async traceOcr(fn) {
     return fn(noOpHandle);
   },
-  async traceExtraction(_params, fn) {
+  async traceExtraction(fn) {
     return fn(noOpGenerationHandle);
   },
   async flush() {},
