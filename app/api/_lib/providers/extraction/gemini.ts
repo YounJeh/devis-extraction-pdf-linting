@@ -1,8 +1,9 @@
 import type { ExtractionProvider } from "./types.js";
 import { buildExtractionSystemPrompt, buildExtractionUserPrompt, parseExtractionFields } from "./shared.js";
 import { ProviderHttpError } from "../http-error.js";
+import { PROVIDERS_CONFIG } from "../../config.js";
 
-const MODEL = "gemini-3.1-flash-lite";
+const MODEL = PROVIDERS_CONFIG.providers.gemini.extraction!.model;
 
 export const geminiExtractionProvider: ExtractionProvider = {
   async extract(ocr, config) {
