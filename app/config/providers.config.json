@@ -46,21 +46,21 @@
     "openrouter": {
       "apiKeyEnv": "OPENROUTER_API_KEY",
       "ocr": {
-        "model": "google/gemma-4-31b-it:free",
+        "model": "nex-agi/nex-n2.5-mini:free",
         "freeQuota": {
           "rpm": 20,
           "rpd": 50,
           "rpdWithCredits": 1000,
-          "note": "Source officielle : openrouter.ai/docs/api-reference/limits (2026-09). Modèle relevé via GET https://openrouter.ai/api/v1/models le 2026-09-11 (10 modèles vision \":free\" dispo à cette date) — reconfirmer au moment d'implémenter (Task 4), la liste change souvent."
+          "note": "Source officielle : openrouter.ai/docs/api-reference/limits (2026-09). google/gemma-4-31b-it:free (choix initial) testé en conditions réelles le 2026-09-11 : 429 \"temporarily rate-limited upstream\" (Google AI Studio) de façon persistante — remplacé par nex-agi/nex-n2.5-mini:free, testé avec succès (OCR + extraction) le même jour. La liste des modèles \":free\" change souvent, à reconfirmer périodiquement."
         }
       },
       "extraction": {
-        "model": "google/gemma-4-26b-a4b-it:free",
+        "model": "nex-agi/nex-n2.5-mini:free",
         "freeQuota": {
           "rpm": 20,
           "rpd": 50,
           "rpdWithCredits": 1000,
-          "note": "Source officielle : openrouter.ai/docs/api-reference/limits (2026-09). Modèle relevé via GET https://openrouter.ai/api/v1/models le 2026-09-11 — reconfirmer au moment d'implémenter (Task 7)."
+          "note": "Voir note du bloc ocr ci-dessus (même remplacement, même raison)."
         }
       }
     },
