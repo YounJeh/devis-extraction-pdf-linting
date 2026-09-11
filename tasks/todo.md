@@ -284,18 +284,20 @@ Retourne le résultat + le nom du provider utilisé + la liste des providers
 sautés et pourquoi.
 
 **Acceptance criteria :**
-- [ ] Fonction générique (typée, réutilisable pour OCR et extraction) qui
+- [x] Fonction générique (typée, réutilisable pour OCR et extraction) qui
       ne connaît rien des providers concrets — juste "essaie, si erreur de
       quota passe au suivant".
-- [ ] Si tous les providers de la liste échouent, l'erreur finale inclut
+- [x] Si tous les providers de la liste échouent, l'erreur finale inclut
       l'historique des tentatives (utile pour le tracing et le débogage).
-- [ ] Couvre : succès au premier essai, bascule après 429, bascule après
-      contexte trop grand (extraction), échec total.
+- [x] Couvre : succès au premier essai, bascule après 429, bascule après
+      contexte trop grand (extraction), échec total — **et** un 5e cas
+      ajouté pendant l'implémentation : une erreur non liée au quota
+      (clé invalide, bug) propage immédiatement sans bascule silencieuse.
 
 **Verification :**
-- [ ] Test unitaire (ou script manuel) avec des providers factices
-      (mocks) couvrant les 4 cas ci-dessus
-- [ ] `npm run build` passe
+- [x] Script manuel (jetable, supprimé après usage) avec des providers
+      factices couvrant les 5 cas ci-dessus
+- [x] `npm run build` passe
 
 **Dependencies :** Task 2 (types de config)
 
@@ -315,21 +317,27 @@ provider, bypass la chaîne — comportement actuel inchangé). Étend le
 tracing Langfuse pour enregistrer la séquence de bascule.
 
 **Acceptance criteria :**
-- [ ] Sans `OCR_PROVIDER`/`EXTRACTION_PROVIDER` défini, `extract.ts`
+- [x] Sans `OCR_PROVIDER`/`EXTRACTION_PROVIDER` défini, `extract.ts`
       utilise la chaîne (`ocrOrder`/`extractionOrder` du config).
-- [ ] Avec `OCR_PROVIDER`/`EXTRACTION_PROVIDER` défini, comportement
+- [x] Avec `OCR_PROVIDER`/`EXTRACTION_PROVIDER` défini, comportement
       identique à aujourd'hui (un seul provider forcé).
-- [ ] La trace Langfuse (`ocr`/`extraction` spans) enregistre le provider
-      final utilisé + la raison de la bascule le cas échéant + les
-      providers sautés (au minimum leur nom et la cause).
-- [ ] Les réponses d'erreur HTTP existantes (`502` sur échec OCR/extraction)
-      restent cohérentes quand *tous* les providers de la chaîne échouent.
+- [x] La trace Langfuse (`ocr`/`extraction` spans) enregistre le provider
+      final utilisé + les providers sautés et pourquoi (`attempts`,
+      remplace l'ancien `reason` — le provider n'est plus connu avant
+      résolution de la chaîne, donc `traceOcr`/`traceExtraction` ne le
+      prennent plus en paramètre : `handle.setMetadata({ provider,
+      attempts })` posé dans le callback une fois la chaîne résolue).
+- [x] Les réponses d'erreur HTTP existantes (`502` sur échec OCR/extraction)
+      restent cohérentes quand *tous* les providers de la chaîne échouent
+      (`ChainError.message` résume l'historique).
 
 **Verification :**
-- [ ] Test manuel : clé invalide sur le 1er provider OCR → bascule visible
-      vers le suivant dans la réponse/logs
-- [ ] Test manuel end-to-end avec un vrai PDF, chaîne complète activée
-- [ ] `npm run build` passe
+- [x] Test manuel (fetch global monkey-patché pour simuler un 429 sur
+      Mistral, premier de `ocrOrder`) → bascule réelle vers Gemini
+      confirmée, "mistral" marqué `skipped_quota`
+- [x] Test manuel end-to-end avec un vrai PDF, chaîne par défaut activée
+      (OCR → mistral, extraction → groq, champs extraits correctement)
+- [x] `npm run build` passe
 
 **Dependencies :** Task 10, Tasks 3-9 (au moins partiellement — peut
 démarrer dès que 2-3 providers par tâche sont prêts)
@@ -351,17 +359,19 @@ remplacés par le seuil de contexte générique par provider dans
 **Confirmé par l'utilisateur.**
 
 **Acceptance criteria :**
-- [ ] `LARGE_DOC_EXTRACTION_PROVIDER` disparaît de `.env.example`, du code,
-      et de toute doc associée.
-- [ ] Le cas "document > seuil pour Groq → bascule vers Gemini" continue de
+- [x] `LARGE_DOC_EXTRACTION_PROVIDER` disparaît de `.env.example`, du code,
+      et de toute doc associée (`grep` vérifié : plus aucune référence
+      fonctionnelle, seulement un commentaire expliquant le remplacement
+      dans `extraction/index.ts`).
+- [x] Le cas "document > seuil pour Groq → bascule vers Gemini" continue de
       fonctionner via la chaîne générique (non-régression).
-- [ ] `choix_techniques.md` reflète ce changement (fusionné avec Task 13).
+- [ ] `choix_techniques.md` reflète ce changement (Task 13, pas encore
+      faite).
 
 **Verification :**
-- [ ] Reproduire le cas d'usage documenté dans `choix_techniques.md`
-      ("devis de plus d'une dizaine de pages") → toujours basculé vers
-      Gemini via la chaîne
-- [ ] `npm run build` passe
+- [x] Reproduit avec un texte > 24000 caractères → groq sauté
+      (`skipped_context`), extraction réussie via Gemini (vraie clé)
+- [x] `npm run build` passe
 
 **Dependencies :** Task 11, confirmation utilisateur
 
@@ -375,11 +385,14 @@ remplacés par le seuil de contexte générique par provider dans
 ---
 
 ## Checkpoint : Chaîne complète
-- [ ] Bascule sur 429 vérifiée (au moins un cas simulé)
-- [ ] Bascule sur contexte trop grand vérifiée (extraction)
+- [x] Bascule sur 429 vérifiée (429 simulé sur Mistral, bascule réelle
+      vers Gemini)
+- [x] Bascule sur contexte trop grand vérifiée (extraction, groq → gemini)
 - [ ] Test end-to-end avec un vrai PDF et de vraies clés pour au moins un
-      provider par nouveau fournisseur
-- [ ] `npm run build` passe
+      provider par nouveau fournisseur — **bloqué sur OpenRouter/Z.ai
+      (code écrit, clés pas encore renseignées)**. Cloudflare Workers AI
+      n'a que l'extraction (OCR écarté, Task 5).
+- [x] `npm run build` passe
 - [ ] Revue avec l'utilisateur avant Phase 5
 
 ## Phase 5 : Documentation

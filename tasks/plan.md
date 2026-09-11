@@ -154,28 +154,33 @@ l'extraction réduit le risque de l'épuiser sur une seule tâche).
 
 ### Phase 4 : Chaîne de bascule générique
 
-- [ ] **Task 10** — Module de résolution de chaîne (logique pure) : étant
+- [x] **Task 10** — Module de résolution de chaîne (logique pure) : étant
       donné un ordre de providers + une fonction d'appel, essaie chacun
-      dans l'ordre, saute au suivant sur erreur de quota (429 ou flag
-      `isQuotaError`) ou (extraction seulement) contexte trop grand. Pas
-      encore branché sur `extract.ts`.
-- [ ] **Task 11** — Brancher la chaîne dans `app/api/extract.ts` : remplace
-      `getOcrProvider`/`getExtractionProvider`/`getLargeDocExtractionProvider`
-      + `pickExtractionProvider`. Respecte l'override manuel
-      `OCR_PROVIDER`/`EXTRACTION_PROVIDER`. Étend le tracing Langfuse pour
-      enregistrer la séquence de bascule (providers sautés + raison).
-- [ ] **Task 12** — Retirer `LARGE_DOC_EXTRACTION_PROVIDER` (env var +
-      code associé), remplacé par le seuil de contexte générique dans
-      `providers.config.json` — **sous réserve de confirmation, voir Open
-      Questions**.
+      dans l'ordre, saute au suivant sur erreur de quota (429, via
+      `ProviderHttpError`) ou (extraction seulement) contexte trop grand.
+      Toute autre erreur propage immédiatement (pas de bascule silencieuse
+      sur un vrai bug/clé invalide).
+- [x] **Task 11** — Branchée dans `app/api/extract.ts` via
+      `runOcr()`/`runExtraction()` (`ocr/index.ts`, `extraction/index.ts`),
+      qui remplacent `getOcrProvider`/`getExtractionProvider`/
+      `getLargeDocExtractionProvider`/`pickExtractionProvider`. Override
+      manuel `OCR_PROVIDER`/`EXTRACTION_PROVIDER` conservé. Tracing étendu :
+      `traceOcr`/`traceExtraction` ne prennent plus le provider en
+      paramètre (connu seulement après résolution de la chaîne) —
+      `handle.setMetadata({ provider, attempts })` posé dans le callback.
+- [x] **Task 12** — `LARGE_DOC_EXTRACTION_PROVIDER` retiré (env var +
+      code), remplacé par `contextCharThreshold` générique par provider
+      dans `providers.config.json` (confirmé par l'utilisateur).
 
 ### Checkpoint : Chaîne complète
-- [ ] Simuler un 429 sur le premier provider OCR/extraction (mock ou clé
-      invalide volontaire) → vérifier la bascule vers le suivant, tracée
-      correctement dans Langfuse (si configuré) et dans les logs.
+- [x] Simuler un 429 sur le premier provider OCR (mock de `fetch`) →
+      bascule confirmée vers le suivant, historique correct dans `attempts`.
+- [x] Simuler un contexte trop grand pour l'extraction → bascule confirmée.
 - [ ] Test end-to-end avec un vrai PDF, au moins un provider par tâche
-      utilisant une vraie clé pour chaque nouveau fournisseur.
-- [ ] `npm run build` passe.
+      utilisant une vraie clé pour chaque nouveau fournisseur — **bloqué
+      pour OpenRouter/Z.ai** (clés pas encore renseignées ; code écrit et
+      buildé). Cloudflare Workers AI n'a que l'extraction (OCR écarté).
+- [x] `npm run build` passe.
 
 ### Phase 5 : Documentation
 
