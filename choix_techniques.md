@@ -88,3 +88,35 @@ calcul de coût manuel par provider — Langfuse le calcule automatiquement à
 partir de `model` + `usageDetails` quand le modèle est dans son référentiel
 de prix (`null` pour Groq, modèle OSS auto-hébergé hors de ce référentiel —
 comportement attendu, pas un bug).
+
+---
+
+## Chaîne de fournisseurs OCR/extraction avec bascule automatique sur quota gratuit
+
+**Contexte :** un seul provider par tâche (`OCR_PROVIDER`/
+`EXTRACTION_PROVIDER`) + un unique fallback fixe (`LARGE_DOC_EXTRACTION_PROVIDER`,
+toujours vers Gemini) quand le texte dépassait le TPM de Groq. Ne couvrait
+ni les nouveaux fournisseurs (OpenRouter, Cloudflare Workers AI, Z.ai) ni
+le cas générique "quota gratuit dépassé, réessayer ailleurs".
+
+**Décision** (`app/config/providers.config.json` + `api/_lib/providers/chain.ts`) :
+config déclarative par provider (clé API en env var, modèle OCR/extraction
+si dispo, quota gratuit indicatif sourcé, seuil de contexte optionnel) +
+deux ordres d'essai (`ocrOrder`/`extractionOrder`). `runChain` essaie
+chaque provider dans l'ordre, bascule au suivant uniquement sur 429
+(`ProviderHttpError`) ou — extraction seulement — si le texte dépasse le
+`contextCharThreshold` du provider (généralise l'ancien fallback fixe,
+qui disparaît). Toute autre erreur (clé invalide, bug) propage
+immédiatement plutôt que d'être masquée par un faux "un autre a pris le
+relais". `OCR_PROVIDER`/`EXTRACTION_PROVIDER` restent un override manuel
+qui bypass entièrement la chaîne (debug). Cloudflare Workers AI ne
+déclare que l'extraction : son seul modèle vision accepte une image, pas
+un PDF multi-page.
+
+**Écarté :** comptage persistant des appels/jour/mois (demanderait une
+base/KV, aucune dans le projet — réactif sur l'erreur réelle du provider
+suffit) · UI de saisie des clés API (env vars, cohérent avec le
+mono-déploiement déjà acté) · throttling actif du débit (usage mono-PDF
+à la fois, risque de dépassement faible) · rasterisation PDF→image pour
+permettre l'OCR Cloudflare (nouvelle dépendance non triviale en
+serverless, pour un gain incertain).
